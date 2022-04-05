@@ -5,8 +5,6 @@ const { auth_admin } = require("../middleware/auth_admin");
 const AppError = require("../Errors/appError");
 const { sendWelcomeEmail, sendCancelEmail } = require("../api/email");
 const router = new express.Router();
-const multer = require("multer");
-const sharp = require("sharp");
 
 //REST APIs Route for Create single user
 router.post("/users", auth_admin, async (req, res) => {
@@ -109,61 +107,6 @@ router.delete("/users/me", auth, async (req, res) => {
     res.send(req.user);
   } catch (e) {
     res.status(500).send();
-  }
-});
-
-const upload = multer({
-  limits: {
-    fileSize: 1000000,
-  },
-  fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return cb(new Error("Please upload an image"));
-    }
-
-    cb(undefined, true);
-  },
-});
-
-//upload image
-router.post(
-  "/users/me/image",
-  auth,
-  upload.single("image"),
-  async (req, res) => {
-    const buffer = await sharp(req.file.buffer)
-      .resize({ width: 250, height: 250 })
-      .png()
-      .toBuffer();
-    req.user.avatar = buffer;
-    await req.user.save();
-    res.send();
-  },
-  (error, req, res, next) => {
-    console.log(e);
-    return next(new AppError(e, 400));
-  }
-);
-
-//Delete an image
-router.delete("/users/me/image", auth, async (req, res) => {
-  req.user.avatar = undefined;
-  await req.user.save();
-  res.send();
-});
-
-router.get("/users/:id/image", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-
-    if (!user || !user.avatar) {
-      throw new Error();
-    }
-
-    res.set("Content-Type", "image/png");
-    res.send(user.avatar);
-  } catch (e) {
-    res.status(404).send();
   }
 });
 

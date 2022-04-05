@@ -77,7 +77,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"role\": \"admin\",\r\n    \"email\": \"user02@gamil.com\",\r\n    \"password\": \"User1234\"\r\n}",
+					"raw": "{\r\n    \"role\": \"admin\",\r\n    \"email\": \"razaranaali066@gamil.com\",\r\n    \"password\": \"superAdmin123\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -289,23 +289,6 @@
 			"response": []
 		},
 		{
-			"name": "Read project",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/projects",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"projects"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Read contact",
 			"request": {
 				"method": "GET",
@@ -323,22 +306,27 @@
 			"response": []
 		},
 		{
-			"name": "Read Profile",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
+			"name": "Read project",
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
+				"url": {
+					"raw": "{{url}}/projects",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"projects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read profile",
+			"request": {
+				"method": "GET",
+				"header": [],
 				"url": {
 					"raw": "{{url}}/users/me",
 					"host": [
@@ -381,6 +369,24 @@
 					],
 					"path": [
 						"works"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Admin Reading All Abouts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/admin/abouts",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"admin",
+						"abouts"
 					]
 				}
 			},
@@ -484,7 +490,7 @@
 			"response": []
 		},
 		{
-			"name": "Read All User",
+			"name": "Admin Reading All Profile",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -493,15 +499,21 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": ""
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": {
-					"raw": "{{url}}/admins",
+					"raw": "{{url}}/admins/me",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"admins"
+						"admins",
+						"me"
 					]
 				}
 			},
@@ -650,7 +662,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"company\": \"CbSol Pro abc\",\r\n    \"description\": \"Node.Js\"\r\n}",
+					"raw": "{\r\n    \"company\": \"CbSol ProS\",\r\n    \"description\": \"Node.Js\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -658,13 +670,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/works/624404aeb7c59bde05271594",
+					"raw": "{{url}}/works/624be0bc420abf33839a9cc4",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"works",
-						"624404aeb7c59bde05271594"
+						"624be0bc420abf33839a9cc4"
 					],
 					"query": [
 						{
@@ -684,21 +696,16 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"Ali Raza\",\r\n     \"password\": \"Computer1234\",\r\n     \"age\":20\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\r\n     \"age\": 13\r\n}"
 				},
 				"url": {
-					"raw": "{{url}}/users/me",
+					"raw": "{{url}}/users/624bdf8d420abf33839a9caf",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"users",
-						"me"
+						"624bdf8d420abf33839a9caf"
 					]
 				}
 			},

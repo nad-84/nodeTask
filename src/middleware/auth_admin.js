@@ -48,7 +48,7 @@ exports.auth_admin = async (req, res, next) => {
     }
     next();
   } catch (e) {
-    return next(new AppError(e, 500));
     console.log(e);
+    return next(new AppError(e, 500));
   }
 };
