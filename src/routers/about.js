@@ -1,6 +1,7 @@
 const express = require("express");
 const About = require("../models/about");
 const auth = require("../middleware/auth");
+const { auth_admin } = require("../middleware/auth_admin");
 const router = new express.Router();
 
 //Create About
@@ -11,7 +12,7 @@ router.post("/abouts", auth, async (req, res) => {
   });
   try {
     await about.save();
-    res.status(201).send("New Project is added");
+    res.status(201).send("New About is added");
   } catch (e) {
     res.status(400).send(e);
     console.log(e);
@@ -20,15 +21,29 @@ router.post("/abouts", auth, async (req, res) => {
 
 //Reqd the about
 router.get("/abouts", auth, async (req, res) => {
+  const _id = req.user._id;
+  try {
+    const about = await About.find({ owner: _id.toString() });
+    if (!about) {
+      return res.status(404).send("No! About is found");
+    }
+    res.send(about);
+  } catch (e) {
+    res.status(500).send();
+    console.log(e);
+  }
+});
+
+//Admin Reading All the Abouts
+router.get("/admin/abouts", auth_admin, async (req, res) => {
   try {
     const about = await About.find({});
     if (!about) {
-      return res.status(404).send("No Project is found");
+      return res.status(404).send("No! About is found");
     }
     res.send(about);
-    res.send(user.name);
   } catch (e) {
-    res.status(500).send(e);
+    res.status(500).send();
     console.log(e);
   }
 });
@@ -52,7 +67,7 @@ router.patch("/abouts/:id", auth, async (req, res) => {
     allowedUpdates.includes(update)
   );
   if (!isValidOperation) {
-    return res.status(400).send({ error: "Invalid updates!" });
+    return res.status(400).json({ error: "Invalid updates!" });
   }
   try {
     const about = await About.findOne({
@@ -63,7 +78,7 @@ router.patch("/abouts/:id", auth, async (req, res) => {
     }
 
     updates.forEach((update) => (about[update] = req.body[update]));
-    res.send("About is update");
+    res.status(200).send("About is update");
   } catch (e) {
     res.status(400).send(e);
     console.log(e);
@@ -79,10 +94,10 @@ router.delete("/abouts/:id", auth, async (req, res) => {
     });
 
     if (!about) {
-      res.status(404).send();
+      return res.status(404).send();
     }
 
-    res.send("About have deleted");
+    res.status(200).send("About have deleted");
   } catch (e) {
     res.status(500).send(e);
     console.log(e);

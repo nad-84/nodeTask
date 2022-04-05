@@ -1,6 +1,7 @@
 const express = require("express");
 const Skill = require("../models/skill");
 const auth = require("../middleware/auth");
+const { auth_admin } = require("../middleware/auth_admin");
 const router = new express.Router();
 
 //Create Skill
@@ -11,7 +12,10 @@ router.post("/skills", auth, async (req, res) => {
   });
   try {
     await skill.save();
-    res.status(201).send("Skill Created");
+    res.status(201).json({
+      status: "success",
+      message: "Created successfully",
+    });
   } catch (e) {
     res.status(400).send(e);
     console.log(e);
@@ -20,13 +24,27 @@ router.post("/skills", auth, async (req, res) => {
 
 //Read the Skill
 router.get("/skills", auth, async (req, res) => {
+  const _id = req.user._id;
+  try {
+    const skill = await Skill.find({ owner: _id.toString() });
+    if (!skill) {
+      return res.status(404).send("No! Skill is found");
+    }
+    res.send(skill);
+  } catch (e) {
+    res.status(500).send();
+    console.log(e);
+  }
+});
+
+//Admin Reading All the Skiils
+router.get("/admin/skills", auth_admin, async (req, res) => {
   try {
     const skill = await Skill.find({});
     if (!skill) {
-      return res.status(404).send("No Skill is found");
+      return res.status(404).send("No! Skill is found");
     }
     res.send(skill);
-    res.send(user.name);
   } catch (e) {
     res.status(500).send();
     console.log(e);
@@ -70,10 +88,10 @@ router.delete("/skills/:id", auth, async (req, res) => {
     });
 
     if (!skill) {
-      res.status(404).send();
+      return res.status(404).send();
     }
 
-    res.send("Skill have been Deleted");
+    res.status(200).send("Skill have been Deleted");
   } catch (e) {
     res.status(500).send();
     console.log(e);

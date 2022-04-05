@@ -43,6 +43,6 @@ const aboutSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-const About = mongoose.model("about", aboutSchema);
+const about = mongoose.model("about", aboutSchema);
 
-module.exports = About;
+module.exports = about;

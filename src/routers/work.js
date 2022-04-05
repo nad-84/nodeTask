@@ -1,6 +1,7 @@
 const express = require("express");
 const Work = require("../models/work");
 const auth = require("../middleware/auth");
+const { auth_admin } = require("../middleware/auth_admin");
 const router = new express.Router();
 
 //Create Work
@@ -20,13 +21,27 @@ router.post("/works", auth, async (req, res) => {
 
 //Read the work
 router.get("/works", auth, async (req, res) => {
+  const _id = req.user._id;
+  try {
+    const work = await Work.find({ owner: _id.toString() });
+    if (!work) {
+      return res.status(404).send("No! Work is found");
+    }
+    res.send(work);
+  } catch (e) {
+    res.status(500).send();
+    console.log(e);
+  }
+});
+
+//Admin Reading All the Works
+router.get("/admin/works", auth_admin, async (req, res) => {
   try {
     const work = await Work.find({});
     if (!work) {
       return res.status(404).send("No! Work is found");
     }
     res.send(work);
-    res.send(work.name);
   } catch (e) {
     res.status(500).send();
     console.log(e);
@@ -72,10 +87,10 @@ router.delete("/works/:id", auth, async (req, res) => {
     });
 
     if (!work) {
-      res.status(404).send();
+      return res.status(404).send();
     }
 
-    res.send("Work hvae benn Deleted");
+    res.status(200).send("Work hvae benn Deleted");
   } catch (e) {
     res.status(500).send();
     console.log(e);

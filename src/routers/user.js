@@ -1,8 +1,8 @@
 const express = require("express");
 const User = require("../models/user");
 const auth = require("../middleware/auth");
-const auth_admin = require("../middleware/auth_admin");
-const { sendWelcomeEmail, sendCancelEmail } = require("../emails/account");
+const { auth_admin } = require("../middleware/auth_admin");
+const { sendWelcomeEmail, sendCancelEmail } = require("../api/email");
 const router = new express.Router();
 const multer = require("multer");
 const sharp = require("sharp");
@@ -11,10 +11,11 @@ const sharp = require("sharp");
 router.post("/users", auth_admin, async (req, res) => {
   try {
     const user = new User(req.body);
-    sendWelcomeEmail(user.email, user.name);
+    sendWelcomeEmail(user.email, "user");
     await user.save();
     res.status(201).send(user);
   } catch (e) {
+    console.log(e);
     res.status(400).send(e);
   }
 });
@@ -26,46 +27,28 @@ router.post("/users/login", async (req, res) => {
       req.body.email,
       req.body.password
     );
+
     const token = await user.generateAuthToken();
-    res.send({ user, token });
+    res.cookie("jwtoken", token, {
+      expires: new Date(Date.now() + 2443000),
+      httpOnly: true,
+    });
+    res.send({ token });
   } catch (e) {
-    res.status(400).send();
+    res.status(400).send({
+      error: { message: "You have entered an invalid username or password" },
+    });
     console.log(e);
   }
 });
 
 //LogOut(by removing the item from given array)
-router.post("/users/logout/me", auth, async (req, res) => {
-  try {
-    console.log(req.user);
-    req.user.tokens = req.user.tokens.filter((token) => {
-      return token.token !== req.token;
-    });
-    await User.updateOne(
-      { _id: req.user._id },
-      {
-        $set: { isLogIn: false },
-      }
-    );
-    await req.user.save();
-
-    res.send("LogOut");
-  } catch (e) {
-    res.status(500).send({ error: "Already LogOut!" });
-    console.log(e);
-    //console.log("Already LogOut");
-  }
-});
-
-//Logout of all sessions
-router.post("/users/logoutAll", auth, async (req, res) => {
-  try {
-    req.user.tokens = [];
-    await req.user.save();
-    res.send({ message: "All Are LogOut" });
-  } catch (e) {
-    res.status(500).send();
-  }
+router.get("/logout", (req, res) => {
+  res.cookie("jwt", "loggedout", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+  res.status(200).json({ status: "success" });
 });
 
 //Reading his/her login account

@@ -1,6 +1,7 @@
 const express = require("express");
 const Contact = require("../models/contact");
 const auth = require("../middleware/auth");
+const { auth_admin } = require("../middleware/auth_admin");
 const router = new express.Router();
 
 //Create Contact
@@ -11,22 +12,36 @@ router.post("/contacts", auth, async (req, res) => {
   });
   try {
     await contact.save();
-    res.status(201).send("About detail is added");
+    res.status(201).send("Contact detail is added");
   } catch (e) {
     res.status(400).send(e);
     console.log(e);
   }
 });
 
-//Read the about
+//Read the Contact
 router.get("/contacts", auth, async (req, res) => {
+  const _id = req.user._id;
+  try {
+    const contact = await Contact.find({ owner: _id.toString() });
+    if (!contact) {
+      return res.status(404).send("No! Contact is found");
+    }
+    res.send(contact);
+  } catch (e) {
+    res.status(500).send();
+    console.log(e);
+  }
+});
+
+//Admin Reading All the Contacts
+router.get("/admin/contacts", auth_admin, async (req, res) => {
   try {
     const contact = await Contact.find({});
     if (!contact) {
-      return res.status(404).send("No Project is found");
+      return res.status(404).send("No! Contact is found");
     }
     res.send(contact);
-    res.send(user.name);
   } catch (e) {
     res.status(500).send();
     console.log(e);
@@ -70,10 +85,10 @@ router.delete("/contacts/:id", auth, async (req, res) => {
     });
 
     if (!contact) {
-      res.status(404).send();
+      return res.status(404).send();
     }
 
-    res.send("Contact! have been deleted");
+    res.status(200).send("Contact! have been deleted");
   } catch (e) {
     res.status(500).send();
     console.log(e);

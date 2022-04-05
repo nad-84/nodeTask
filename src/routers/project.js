@@ -3,6 +3,7 @@ const Project = require("../models/project");
 const auth = require("../middleware/auth");
 const AppError = require("../Errors/appError");
 const User = require("../models/user");
+const { auth_admin } = require("../middleware/auth_admin");
 
 const router = new express.Router();
 
@@ -22,18 +23,33 @@ router.post("/projects", auth, async (req, res, next) => {
 });
 
 //Read the Project
-router.get("/projects", auth, async (req, res, next) => {
+router.get("/projects", auth, async (req, res) => {
+  const _id = req.user._id;
   try {
-    const project = await Project.find({});
-    if (project) {
-      res.send(404).send("No Project");
+    const project = await Project.find({ owner: _id.toString() });
+    if (!project) {
+      return res.send(404).send("No Project");
       //return next(new AppError("No Project is found!", 400));
     }
     res.send(project);
-    res.send(project.name);
   } catch (e) {
+    res.status(500).send();
     console.log(e);
-    return next(new AppError(e, 500));
+  }
+});
+
+//Admin Reading All the Projects
+router.get("/admin/projects", auth_admin, async (req, res) => {
+  try {
+    const project = await Project.find({});
+    if (!project) {
+      return res.send(404).send("No Project");
+      //return next(new AppError("No Project is found!", 400));
+    }
+    res.send(project);
+  } catch (e) {
+    res.status(500).send();
+    console.log(e);
   }
 });
 
@@ -73,7 +89,7 @@ router.patch("/projects/:id", auth, async (req, res, next) => {
 });
 
 //Delete the Project by ID
-router.delete("/projects/:id", auth, async (req, res) => {
+router.delete("/projects/:id", auth, async (req, res, next) => {
   try {
     const project = await Project.findOneAndDelete({
       _id: req.params.id,
@@ -81,10 +97,10 @@ router.delete("/projects/:id", auth, async (req, res) => {
     });
 
     if (!project) {
-      res.status(404).send();
+      return res.status(404).send();
     }
 
-    res.send("Project have been removed");
+    res.status(200).send("Project have been removed");
   } catch (e) {
     console.log(e);
     return next(new AppError(e, 500));
