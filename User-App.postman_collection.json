@@ -387,24 +387,6 @@
 			"response": []
 		},
 		{
-			"name": "Admin Reading All Abouts",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/admin/abouts",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"admin",
-						"abouts"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Admin Reading All Contacts",
 			"request": {
 				"method": "GET",

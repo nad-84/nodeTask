@@ -1,7 +1,10 @@
 const express = require("express");
 const Skill = require("../models/skill");
 const auth = require("../middleware/auth");
+const AppError = require("../Errors/appError");
+const User = require("../models/user");
 const { auth_admin } = require("../middleware/auth_admin");
+
 const router = new express.Router();
 
 //Create Skill
@@ -23,22 +26,22 @@ router.post("/skills", auth, async (req, res) => {
 });
 
 //Read the Skill
-router.get("/skills", auth, async (req, res) => {
+router.get("/skills", auth, async (req, res, next) => {
   const _id = req.user._id;
   try {
     const skill = await Skill.find({ owner: _id.toString() });
     if (!skill) {
-      return res.status(404).send("No! Skill is found");
+      return res.send(404).send("No Skill");
     }
     res.send(skill);
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError(e, 500));
   }
 });
 
 //Admin Reading All the Skiils
-router.get("/admin/skills", auth_admin, async (req, res) => {
+router.get("/admin/skills", auth_admin, async (req, res, next) => {
   try {
     const skill = await Skill.find({});
     if (!skill) {
@@ -46,13 +49,13 @@ router.get("/admin/skills", auth_admin, async (req, res) => {
     }
     res.send(skill);
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError(e, 500));
   }
 });
 
 //Update Skill
-router.patch("/skills/:id", auth, async (req, res) => {
+router.patch("/skills/:id", auth, async (req, res, next) => {
   const updates = Object.keys(req.body);
 
   const allowedUpdates = ["name", "link"];
@@ -72,10 +75,11 @@ router.patch("/skills/:id", auth, async (req, res) => {
     }
 
     updates.forEach((update) => (skill[update] = req.body[update]));
+    await skill.save();
     res.send("Skill is update");
   } catch (e) {
-    res.status(400).send(e);
     console.log(e);
+    return next(new AppError(e, 400));
   }
 });
 

@@ -1,7 +1,10 @@
 const express = require("express");
 const About = require("../models/about");
 const auth = require("../middleware/auth");
+const AppError = require("../Errors/appError");
+const User = require("../models/user");
 const { auth_admin } = require("../middleware/auth_admin");
+
 const router = new express.Router();
 
 //Create About
@@ -20,22 +23,22 @@ router.post("/abouts", auth, async (req, res) => {
 });
 
 //Reqd the about
-router.get("/abouts", auth, async (req, res) => {
+router.get("/abouts", auth, async (req, res, next) => {
   const _id = req.user._id;
   try {
     const about = await About.find({ owner: _id.toString() });
     if (!about) {
-      return res.status(404).send("No! About is found");
+      return res.send(404).send("No about");
     }
     res.send(about);
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError(e, 500));
   }
 });
 
 //Admin Reading All the Abouts
-router.get("/admin/abouts", auth_admin, async (req, res) => {
+router.get("/admin/abouts", auth_admin, async (req, res, next) => {
   try {
     const about = await About.find({});
     if (!about) {
@@ -43,13 +46,13 @@ router.get("/admin/abouts", auth_admin, async (req, res) => {
     }
     res.send(about);
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError(e, 500));
   }
 });
 
 //Update About
-router.patch("/abouts/:id", auth, async (req, res) => {
+router.patch("/abouts/:id", auth, async (req, res, next) => {
   const updates = Object.keys(req.body);
 
   const allowedUpdates = [
@@ -78,10 +81,11 @@ router.patch("/abouts/:id", auth, async (req, res) => {
     }
 
     updates.forEach((update) => (about[update] = req.body[update]));
+    await about.save();
     res.status(200).send("About is update");
   } catch (e) {
-    res.status(400).send(e);
     console.log(e);
+    return next(new AppError(e, 400));
   }
 });
 

@@ -3,6 +3,10 @@ const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Work = require("./work");
+const Project = require("./project");
+const Contact = require("./contact");
+const Skill = require("./skill");
+const About = require("./about");
 
 const userSchema = new mongoose.Schema(
   {
@@ -70,8 +74,28 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.virtual("tasks", {
+userSchema.virtual("works", {
   ref: "work",
+  localField: "_id",
+  foreignField: "owner",
+});
+userSchema.virtual("skills", {
+  ref: "skill",
+  localField: "_id",
+  foreignField: "owner",
+});
+userSchema.virtual("projects", {
+  ref: "project",
+  localField: "_id",
+  foreignField: "owner",
+});
+userSchema.virtual("contacts", {
+  ref: "contact",
+  localField: "_id",
+  foreignField: "owner",
+});
+userSchema.virtual("abouts", {
+  ref: "about",
   localField: "_id",
   foreignField: "owner",
 });
@@ -133,10 +157,14 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Delete user works when user is removed
+// Delete user All works when user is removed
 userSchema.pre("remove", async function (next) {
   const user = this;
   await Work.deleteMany({ owner: user._id });
+  await Project.deleteMany({ owner: user._id });
+  await Contact.deleteMany({ owner: user._id });
+  await About.deleteMany({ owner: user._id });
+  await Skill.deleteMany({ owner: user._id });
   next();
 });
 

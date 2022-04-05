@@ -23,18 +23,17 @@ router.post("/projects", auth, async (req, res, next) => {
 });
 
 //Read the Project
-router.get("/projects", auth, async (req, res) => {
+router.get("/projects", auth, async (req, res, next) => {
   const _id = req.user._id;
   try {
     const project = await Project.find({ owner: _id.toString() });
     if (!project) {
       return res.send(404).send("No Project");
-      //return next(new AppError("No Project is found!", 400));
     }
     res.send(project);
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError(e, 500));
   }
 });
 
@@ -44,12 +43,11 @@ router.get("/admin/projects", auth_admin, async (req, res) => {
     const project = await Project.find({});
     if (!project) {
       return res.send(404).send("No Project");
-      //return next(new AppError("No Project is found!", 400));
     }
     res.send(project);
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError(e, 500));
   }
 });
 
@@ -81,6 +79,7 @@ router.patch("/projects/:id", auth, async (req, res, next) => {
     }
 
     updates.forEach((update) => (project[update] = req.body[update]));
+    await project.save();
     res.send("Project is updated");
   } catch (e) {
     console.log(e);

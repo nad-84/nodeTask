@@ -1,7 +1,10 @@
 const express = require("express");
 const Work = require("../models/work");
 const auth = require("../middleware/auth");
+const AppError = require("../Errors/appError");
+const User = require("../models/user");
 const { auth_admin } = require("../middleware/auth_admin");
+
 const router = new express.Router();
 
 //Create Work
@@ -20,17 +23,17 @@ router.post("/works", auth, async (req, res) => {
 });
 
 //Read the work
-router.get("/works", auth, async (req, res) => {
+router.get("/works", auth, async (req, res, next) => {
   const _id = req.user._id;
   try {
     const work = await Work.find({ owner: _id.toString() });
     if (!work) {
-      return res.status(404).send("No! Work is found");
+      return res.send(404).send("No Work");
     }
     res.send(work);
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError(e, 500));
   }
 });
 
@@ -49,7 +52,7 @@ router.get("/admin/works", auth_admin, async (req, res) => {
 });
 
 //Update Work
-router.patch("/works/:id", auth, async (req, res) => {
+router.patch("/works/:id", auth, async (req, res, next) => {
   const updates = Object.keys(req.body);
 
   const allowedUpdates = ["company", "description", "start_date", "end_date"];
@@ -71,10 +74,11 @@ router.patch("/works/:id", auth, async (req, res) => {
     }
 
     updates.forEach((update) => (work[update] = req.body[update]));
+    await work.save();
     res.send("Work is update");
   } catch (e) {
-    res.status(400).send(e);
     console.log(e);
+    return next(new AppError(e, 400));
   }
 });
 

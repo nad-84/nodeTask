@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const AppError = require("../Errors/appError");
 const User = require("../models/user");
 
 const auth = async (req, res, next) => {
@@ -10,7 +11,7 @@ const auth = async (req, res, next) => {
     });
 
     if (!user) {
-      return next(new AppError());
+      return next(new AppError("Not Found", 404));
     }
     req.user = user;
     next();
