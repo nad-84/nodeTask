@@ -1,8 +1,8 @@
-const jwt = require("jsonwebtoken");
 const AppError = require("../Errors/appError");
 const User = require("../models/user");
-
-const auth = async (req, res, next) => {
+const jwt = require("jsonwebtoken");
+const { promisify } = require("util");
+exports.isLogin = async (req, res, next) => {
   try {
     let token;
     if (
@@ -13,19 +13,24 @@ const auth = async (req, res, next) => {
     } else if (req.cookies.jwtoken) {
       token = req.cookies.jwtoken;
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!token) {
+      req.user = null;
+      return next();
+    }
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
     const user = await User.findOne({
       _id: decoded._id,
     });
     if (!user) {
-      return next(new AppError({ error: "Not Found" }, 404));
+      req.user = null;
+      return next();
     }
     req.user = user;
     next();
   } catch (e) {
     console.log(e);
-    return next(new AppError({ error: "Please authenticate." }, 401));
+    req.user = null;
+    return next(new AppError({error: "Something went wrong"}, 401));
+    //next();
   }
 };
-
-module.exports = auth;

@@ -2,23 +2,25 @@ const express = require("express");
 const Contact = require("../models/contact");
 const auth = require("../middleware/auth");
 const AppError = require("../Errors/appError");
-const User = require("../models/user");
-const { auth_admin } = require("../middleware/auth_admin");
+const { isLogin } = require("../middleware/isLogin");
 
 const router = new express.Router();
 
 //Create Contact
-router.post("/contacts", auth, async (req, res) => {
+router.post("/contacts", auth, async (req, res, next) => {
   const contact = new Contact({
     ...req.body, //Express Spread Op
     owner: req.user._id,
   });
   try {
     await contact.save();
-    res.status(201).send("Contact detail is added");
+    res.status(201).json({
+      status: "success",
+      message: "Contact Detail is added",
+    });
   } catch (e) {
-    res.status(400).send(e);
     console.log(e);
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
@@ -27,27 +29,30 @@ router.get("/contacts", auth, async (req, res, next) => {
   const _id = req.user._id;
   try {
     const contact = await Contact.find({ owner: _id.toString() });
-    if (!contact) {
-      return res.send(404).send("No Contact");
+    if (!contact || contact.length === 0) {
+      return next(new AppError("No Contact!", 404));
     }
     res.send(contact);
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 500));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
 //Admin Reading All the Contacts
-router.get("/admin/contacts", auth_admin, async (req, res, next) => {
+router.get("/admin/allContacts", isLogin, async (req, res, next) => {
+  if (req.user?.role !== "admin" || !req.user) {
+    return next(new AppError("Admin should be login for this task", 401));
+  }
   try {
     const contact = await Contact.find({});
-    if (!contact) {
-      return res.status(404).send("No! Contact is found");
+    if (!contact || contact.length === 0) {
+      return next(new AppError("No! Contact is found", 404));
     }
-    res.send(contact);
+    res.status(200).send(contact);
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 500));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
@@ -61,41 +66,48 @@ router.patch("/contacts/:id", auth, async (req, res, next) => {
     allowedUpdates.includes(update)
   );
   if (!isValidOperation) {
-    return res.status(400).send({ error: "Invalid updates!" });
+    return next(new AppError("Invalid Updates!", 400));
   }
   try {
     const contact = await Contact.findOne({
       _id: req.params.id,
     });
-    if (!contact) {
-      return res.status(404).send();
+    if (!contact || contact.length === 0) {
+      return next(new AppError("No! Contact is found", 404));
     }
 
     updates.forEach((update) => (contact[update] = req.body[update]));
     await contact.save();
-    res.send("Contact is update");
+    res.status(200).json({
+      status: "success",
+      message: "About is updated",
+    });
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 400));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
 //Delete the Contact by ID
-router.delete("/contacts/:id", auth, async (req, res) => {
+router.delete("/contacts/:id", auth, async (req, res, next) => {
   try {
     const contact = await Contact.findOneAndDelete({
       _id: req.params.id,
       owner: req.user._id,
     });
 
-    if (!contact) {
-      return res.status(404).send();
+    if (!contact || contact.length === 0) {
+      return next(
+        new AppError("No! Contact is found on that ID or Invalid ID !", 404)
+      );
     }
-
-    res.status(200).send("Contact! have been deleted");
+    res.status(200).json({
+      status: "success",
+      message: "Contact! have been deleted",
+    });
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError("Something went wrong", 500));
   }
 });
 

@@ -22,20 +22,13 @@
 			],
 			"request": {
 				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjQ4MzNiYWRlZThkNTc5YjZlNGFhNjYiLCJpYXQiOjE2NDkwOTg3NDksImV4cCI6MTY0OTE4NTE0OX0.YRkMUMY7ew6aKtHsUTMZRYn-9dTlyII72cMIxd1L46Q",
-							"type": "string"
-						}
-					]
+					"type": "noauth"
 				},
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "\r\n{\r\n    \"role\": \"admin\",\r\n    \"name\": \"admin02\",\r\n    \"email\": \"user02@gamil.com\",\r\n    \"password\": \"User1234\"\r\n}",
+					"raw": "{\r\n    \"name\": \"AR\",\r\n    \"email\": \"aliraza190699174@gmail.com\",\r\n    \"password\": \"User123!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -77,7 +70,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"role\": \"admin\",\r\n    \"email\": \"razaranaali066@gamil.com\",\r\n    \"password\": \"superAdmin123\"\r\n}",
+					"raw": "{\r\n\"email\": \"ali123@gamil.com\",\r\n    \"password\": \"User123456!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -98,17 +91,93 @@
 			"response": []
 		},
 		{
+			"name": "Forgot Password",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"if(pm.response.code === 200){\r",
+							"    pm.environment.set('authToken', pm.response.json().token)\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"email\": \"test@gmail.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/forgotPassword",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"forgotPassword"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reset Password",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjRlNmVkZjM1YmE5YzZhZWRhNDQzZDAiLCJpYXQiOjE2NDkzMDgxMDIsImV4cCI6MTY0OTM5NDUwMn0.y-vSzGwkNbG0EBrplVLTXR9LZnNjFXW0WHMk2Mo2V10",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newPass\": \"User123456!\",\r\n   \"resetLink\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjUzZjhlZTM5ZDk1NmI5ODcyODNhNjgiLCJpYXQiOjE2NDk2NzMyMjgsImV4cCI6MTY0OTY3NDQyOH0.Vl23aB9mpFMpK8tJhOKT0KvNeRVAfZ2BDqL88UCUByY\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/resetPassword",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"resetPassword"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Logout user",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:3000/logout",
-					"protocol": "http",
+					"raw": "{{url}}/logout",
 					"host": [
-						"localhost"
+						"{{url}}"
 					],
-					"port": "3000",
 					"path": [
 						"logout"
 					]
@@ -341,23 +410,6 @@
 			"response": []
 		},
 		{
-			"name": "Read skill",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/skills",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"skills"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Read work",
 			"request": {
 				"method": "GET",
@@ -375,18 +427,38 @@
 			"response": []
 		},
 		{
-			"name": "Admin Reading All Abouts",
+			"name": "Read skill",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/admin/abouts",
+					"raw": "{{url}}/skills",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"skills"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Admin Reading All Abouts",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/admin/allAbouts",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"admin",
-						"abouts"
+						"allAbouts"
 					]
 				}
 			},
@@ -395,16 +467,19 @@
 		{
 			"name": "Admin Reading All Contacts",
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/admin/works",
+					"raw": "{{url}}/admin/allContacts",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"admin",
-						"works"
+						"allContacts"
 					]
 				}
 			},
@@ -413,16 +488,19 @@
 		{
 			"name": "Admin Reading All Projects",
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/admin/works",
+					"raw": "{{url}}/admin/allProjects",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"admin",
-						"works"
+						"allProjects"
 					]
 				}
 			},
@@ -449,41 +527,19 @@
 		{
 			"name": "Admin Reading All Work",
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/admin/works",
+					"raw": "{{url}}/admin/allWorks",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"admin",
-						"works"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Admin Reading User by id",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
-				"url": {
-					"raw": "{{url}}/admins/62430fcb2d122fb5085c0683",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"admins",
-						"62430fcb2d122fb5085c0683"
+						"allWorks"
 					]
 				}
 			},
@@ -495,6 +551,9 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -507,13 +566,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/admins/me",
+					"raw": "{{url}}/admins/allProfile",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"admins",
-						"me"
+						"allProfile"
 					]
 				}
 			},
@@ -692,20 +751,35 @@
 		{
 			"name": "Update user",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjRlNmVkZjM1YmE5YzZhZWRhNDQzZDAiLCJpYXQiOjE2NDkzMDk2MTcsImV4cCI6MTY0OTM5NjAxN30.NnffQSGtpOtpXrna8JYz3D9YSjbIpD4FocaNkXoclME",
+							"type": "string"
+						}
+					]
+				},
 				"method": "PATCH",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n     \"age\": 13\r\n}"
+					"raw": "{\r\n    \"name\": \"user1\",\r\n    \"age\":34\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": {
-					"raw": "{{url}}/users/624bdf8d420abf33839a9caf",
+					"raw": "{{url}}/users/update_me",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"users",
-						"624bdf8d420abf33839a9caf"
+						"update_me"
 					]
 				}
 			},
@@ -802,66 +876,50 @@
 			"response": []
 		},
 		{
-			"name": "Delete user",
+			"name": "Delete me",
 			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/users/me",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"users",
-						"me"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Upload image",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
+				"auth": {
+					"type": "bearer",
+					"bearer": [
 						{
-							"key": "avatar",
-							"type": "file",
-							"src": "/C:/Users/RANA/Downloads/Compressed/node-course-images/philly.jpg"
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjRjMGM0MDQxMjFkZmE1N2JlMTdkMDciLCJpYXQiOjE2NDkxNTIzNTIsImV4cCI6MTY0OTIzODc1Mn0.BeLbc6ewuhxG2W5PqLSlyMB1XNdbmxAww422PgwVQnc",
+							"type": "string"
 						}
 					]
 				},
+				"method": "DELETE",
+				"header": [],
 				"url": {
-					"raw": "{{url}}/users/me/image",
+					"raw": "{{url}}/users/delete_me",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"users",
-						"me",
-						"image"
+						"delete_me"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Delete image",
+			"name": "Deleting any profile by ID",
 			"request": {
+				"auth": {
+					"type": "noauth"
+				},
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/users/me/image",
+					"raw": "{{url}}/admin/delete/6252d9bc099fb5cf19316efd",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
-						"users",
-						"me",
-						"image"
+						"admin",
+						"delete",
+						"6252d9bc099fb5cf19316efd"
 					]
 				}
 			},

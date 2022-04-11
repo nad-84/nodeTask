@@ -7,6 +7,7 @@ const Project = require("./project");
 const Contact = require("./contact");
 const Skill = require("./skill");
 const About = require("./about");
+const crypto = require("crypto-js");
 
 const userSchema = new mongoose.Schema(
   {
@@ -31,6 +32,7 @@ const userSchema = new mongoose.Schema(
       index: true,
       trim: true,
       lowercase: true,
+      //validate: [validator.isEmail, "Please provide a valid email"],
       validate(value) {
         if (!validator.isEmail(value)) {
           throw new Error("Email is invalid");
@@ -40,14 +42,24 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
-      minlength: 8,
       trim: true,
       validate(value) {
-        if (value.toLowerCase().includes("password")) {
-          throw new Error('Password cannot contain "password"');
+        if (
+          !value.match(
+            "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$"
+          )
+        ) {
+          throw new Error(
+            "Password should contain 1 uppercase, 1 lowercase , 1 digit"
+          );
         }
       },
     },
+    resetLink: {
+      data: String,
+      default: "",
+    },
+
     age: {
       type: Number,
       default: 1,
@@ -56,17 +68,6 @@ const userSchema = new mongoose.Schema(
           throw new Error("Age must be a postive number");
         }
       },
-    },
-    tokens: [
-      {
-        token: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
-    avatar: {
-      type: Buffer,
     },
   },
   {
@@ -118,9 +119,6 @@ userSchema.methods.generateAuthToken = async function () {
   const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, {
     expiresIn: "24h",
   });
-  user.tokens = user.tokens.concat({ token });
-  await user.save();
-
   return token;
 };
 
@@ -157,7 +155,21 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Delete user All works when user is removed
+//ResetPassword
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
+
+// Delete user All Data when user is removed
 userSchema.pre("remove", async function (next) {
   const user = this;
   await Work.deleteMany({ owner: user._id });

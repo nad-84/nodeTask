@@ -2,8 +2,7 @@ const express = require("express");
 const Project = require("../models/project");
 const auth = require("../middleware/auth");
 const AppError = require("../Errors/appError");
-const User = require("../models/user");
-const { auth_admin } = require("../middleware/auth_admin");
+const { isLogin } = require("../middleware/isLogin");
 
 const router = new express.Router();
 
@@ -15,10 +14,13 @@ router.post("/projects", auth, async (req, res, next) => {
   });
   try {
     await project.save();
-    res.status(201).send("New Project is added");
+    res.status(201).json({
+      status: "success",
+      message: "New Project Details is added",
+    });
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 500));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
@@ -27,27 +29,30 @@ router.get("/projects", auth, async (req, res, next) => {
   const _id = req.user._id;
   try {
     const project = await Project.find({ owner: _id.toString() });
-    if (!project) {
-      return res.send(404).send("No Project");
+    if (!project || project.length === 0) {
+      return next(new AppError("No! Project is found", 404));
     }
-    res.send(project);
+    res.status(200).send(project);
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 500));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
 //Admin Reading All the Projects
-router.get("/admin/projects", auth_admin, async (req, res) => {
+router.get("/admin/allProjects", isLogin, async (req, res, next) => {
+  if (req.user?.role !== "admin" || !req.user) {
+    return next(new AppError("Admin should be login for this task", 401));
+  }
   try {
     const project = await Project.find({});
-    if (!project) {
-      return res.send(404).send("No Project");
+    if (!project || project.length === 0) {
+      return next(new AppError("No Project found", 404));
     }
-    res.send(project);
+    res.status(200).send(project);
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 500));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
@@ -68,22 +73,25 @@ router.patch("/projects/:id", auth, async (req, res, next) => {
     allowedUpdates.includes(update)
   );
   if (!isValidOperation) {
-    return next(new AppError({ error: "Invalid updates!" }, 400));
+    return next(new AppError("Invalid Updates!", 400));
   }
   try {
     const project = await Project.findOne({
       _id: req.params.id,
     });
-    if (!project) {
-      return next(new AppError("No Project is found!", 404));
+    if (!project || project.length === 0) {
+      return next(new AppError("No! Project is found", 404));
     }
 
     updates.forEach((update) => (project[update] = req.body[update]));
     await project.save();
-    res.send("Project is updated");
+    res.status(200).json({
+      status: "success",
+      message: "Project is updated",
+    });
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 400));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
@@ -95,14 +103,16 @@ router.delete("/projects/:id", auth, async (req, res, next) => {
       owner: req.user._id,
     });
 
-    if (!project) {
+    if (!project || project.length === 0) {
       return res.status(404).send();
     }
-
-    res.status(200).send("Project have been removed");
+    res.status(200).json({
+      status: "success",
+      message: "Project have Removed",
+    });
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 500));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 

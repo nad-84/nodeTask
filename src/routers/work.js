@@ -2,23 +2,25 @@ const express = require("express");
 const Work = require("../models/work");
 const auth = require("../middleware/auth");
 const AppError = require("../Errors/appError");
-const User = require("../models/user");
-const { auth_admin } = require("../middleware/auth_admin");
+const { isLogin } = require("../middleware/isLogin");
 
 const router = new express.Router();
 
 //Create Work
-router.post("/works", auth, async (req, res) => {
+router.post("/works", auth, async (req, res, next) => {
   const work = new Work({
     ...req.body, //Express Spread Op
     owner: req.user._id,
   });
   try {
     await work.save();
-    res.status(201).send("New Work Created");
+    res.status(201).json({
+      status: "success",
+      message: "New Work Details is added",
+    });
   } catch (e) {
-    res.status(400).send();
     console.log(e);
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
@@ -27,27 +29,30 @@ router.get("/works", auth, async (req, res, next) => {
   const _id = req.user._id;
   try {
     const work = await Work.find({ owner: _id.toString() });
-    if (!work) {
-      return res.send(404).send("No Work");
+    if (!work || work.length === 0) {
+      return next(new AppError("No Work found", 404));
     }
-    res.send(work);
+    res.status(200).send(work);
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 500));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
 //Admin Reading All the Works
-router.get("/admin/works", auth_admin, async (req, res) => {
+router.get("/admin/allWorks", isLogin, async (req, res, next) => {
+  if (req.user?.role !== "admin" || !req.user) {
+    return next(new AppError("Admin should be login for this task", 401));
+  }
   try {
     const work = await Work.find({});
-    if (!work) {
-      return res.status(404).send("No! Work is found");
+    if (!work || work.length === 0) {
+      return next(new AppError("No! Work is found", 404));
     }
-    res.send(work);
+    res.status(200).send(work);
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
@@ -62,42 +67,45 @@ router.patch("/works/:id", auth, async (req, res, next) => {
   );
 
   if (!isValidOperation) {
-    return res.status(400).send({ error: "Invalid updates!" });
+    return next(new AppError({ error: "Invalid Updates!" }, 404));
   }
   try {
     const work = await Work.findOneAndUpdate({
       _id: req.params.id,
     });
 
-    if (!work) {
-      return res.status(404).send();
+    if (!work || work.length === 0) {
+      return next(new AppError("No! Work found", 404));
     }
 
     updates.forEach((update) => (work[update] = req.body[update]));
     await work.save();
-    res.send("Work is update");
+    res.status(200).json({
+      status: "success",
+      message: "Work is updated",
+    });
   } catch (e) {
     console.log(e);
-    return next(new AppError(e, 400));
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
 //Delete the Work by ID
-router.delete("/works/:id", auth, async (req, res) => {
+router.delete("/works/:id", auth, async (req, res, next) => {
   try {
     const work = await Work.findOneAndDelete({
       _id: req.params.id,
       owner: req.user._id,
     });
 
-    if (!work) {
-      return res.status(404).send();
+    if (!work || work.length === 0) {
+      new AppError("No! Work is found on that ID or Invalid ID !", 404);
     }
 
     res.status(200).send("Work hvae benn Deleted");
   } catch (e) {
-    res.status(500).send();
     console.log(e);
+    return next(new AppError("Something went wrong", 500));
   }
 });
 
