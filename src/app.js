@@ -21,9 +21,7 @@ app.use(workRouter);
 app.use(userRouter);
 
 app.use("*", (req, res) => {
-  return next(
-    new AppError(`Can't find ${req.originalUrl} on this server!`, 404)
-  );
+  return next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 app.use(globalErrorHandler);
